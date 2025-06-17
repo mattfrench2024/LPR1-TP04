@@ -1,4 +1,5 @@
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Scanner;
@@ -8,36 +9,29 @@ public class Data {
     private int mes;
     private int ano;
 
-    Scanner sc = new Scanner(System.in);
+    Scanner input = new Scanner(System.in);
 
-    private static final String[] MESES = {
-        "", "janeiro", "fevereiro", "março", "abril", "maio", "junho",
-        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"
-    };
-
-    // Construtor com entrada via teclado e validação
     public Data() {
         entraDia();
         entraMes();
         entraAno();
     }
 
-    // Construtor com parâmetros e validação
     public Data(int d, int m, int a) {
-        if (validaData(d, m, a)) {
-            dia = d;
-            mes = m;
-            ano = a;
+        if (dataValida(d, m, a)) {
+            this.dia = d;
+            this.mes = m;
+            this.ano = a;
         } else {
-            System.out.println("Data inválida. Valores padrões definidos.");
-            dia = 1;
-            mes = 1;
-            ano = 2000;
+            System.out.println("Data inválida. Atribuindo valores padrão (1/1/2000).");
+            this.dia = 1;
+            this.mes = 1;
+            this.ano = 2000;
         }
     }
 
     public void entraDia(int d) {
-        if (validaData(d, this.mes, this.ano)) {
+        if (dataValida(d, this.mes, this.ano)) {
             this.dia = d;
         } else {
             System.out.println("Dia inválido.");
@@ -45,7 +39,7 @@ public class Data {
     }
 
     public void entraMes(int m) {
-        if (validaData(this.dia, m, this.ano)) {
+        if (dataValida(this.dia, m, this.ano)) {
             this.mes = m;
         } else {
             System.out.println("Mês inválido.");
@@ -53,7 +47,7 @@ public class Data {
     }
 
     public void entraAno(int a) {
-        if (validaData(this.dia, this.mes, a)) {
+        if (dataValida(this.dia, this.mes, a)) {
             this.ano = a;
         } else {
             System.out.println("Ano inválido.");
@@ -61,30 +55,48 @@ public class Data {
     }
 
     public void entraDia() {
-        int d;
-        do {
-            System.out.print("Digite o dia: ");
-            d = sc.nextInt();
-        } while (!validaData(d, this.mes, this.ano));
-        this.dia = d;
+        while (true) {
+            try {
+                System.out.print("Digite o dia: ");
+                int d = Integer.parseInt(input.nextLine());
+                if (dataValida(d, this.mes, this.ano)) {
+                    this.dia = d;
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println("Erro! Digite um número inteiro válido para o dia.");
+            }
+        }
     }
 
     public void entraMes() {
-        int m;
-        do {
-            System.out.print("Digite o mês: ");
-            m = sc.nextInt();
-        } while (!validaData(this.dia, m, this.ano));
-        this.mes = m;
+        while (true) {
+            try {
+                System.out.print("Digite o mês: ");
+                int m = Integer.parseInt(input.nextLine());
+                if (dataValida(this.dia, m, this.ano)) {
+                    this.mes = m;
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println("Erro! Digite um número inteiro válido para o mês.");
+            }
+        }
     }
 
     public void entraAno() {
-        int a;
-        do {
-            System.out.print("Digite o ano: ");
-            a = sc.nextInt();
-        } while (!validaData(this.dia, this.mes, a));
-        this.ano = a;
+        while (true) {
+            try {
+                System.out.print("Digite o ano: ");
+                int a = Integer.parseInt(input.nextLine());
+                if (dataValida(this.dia, this.mes, a)) {
+                    this.ano = a;
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println("Erro! Digite um número inteiro válido para o ano.");
+            }
+        }
     }
 
     public int retDia() {
@@ -104,7 +116,9 @@ public class Data {
     }
 
     public String mostra2() {
-        return String.format("%02d/%s/%04d", dia, MESES[mes], ano);
+        String[] meses = {"janeiro", "fevereiro", "março", "abril", "maio", "junho",
+                          "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"};
+        return String.format("%02d/%s/%04d", dia, meses[mes - 1], ano);
     }
 
     public boolean bissexto() {
@@ -112,28 +126,29 @@ public class Data {
     }
 
     public int diasTranscorridos() {
-        int[] diasPorMes = {0, 31, (bissexto() ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        int[] diasMes = {31, (bissexto() ? 29 : 28), 31, 30, 31, 30,
+                         31, 31, 30, 31, 30, 31};
         int total = 0;
-        for (int i = 1; i < mes; i++) {
-            total += diasPorMes[i];
+        for (int i = 0; i < mes - 1; i++) {
+            total += diasMes[i];
         }
-        return total + dia;
+        total += dia;
+        return total;
     }
 
     public void apresentaDataAtual() {
         Date hoje = new Date();
-        DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
-        System.out.println("Data atual: " + df.format(hoje));
+        DateFormat formato = DateFormat.getDateInstance(DateFormat.FULL);
+        System.out.println("Data atual: " + formato.format(hoje));
     }
 
-    private boolean validaData(int d, int m, int a) {
-        if (a < 1 || m < 1 || m > 12) return false;
+    private boolean dataValida(int d, int m, int a) {
+        if (m < 1 || m > 12) return false;
+        if (a < 1) return false;
 
-        int[] diasPorMes = {0, 31, (bissextoAno(a) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-        return d >= 1 && d <= diasPorMes[m];
-    }
+        int[] diasMes = {31, (bissexto() ? 29 : 28), 31, 30, 31, 30,
+                         31, 31, 30, 31, 30, 31};
 
-    private boolean bissextoAno(int ano) {
-        return (ano % 4 == 0 && ano % 100 != 0) || (ano % 400 == 0);
+        return d >= 1 && d <= diasMes[m - 1];
     }
 }
